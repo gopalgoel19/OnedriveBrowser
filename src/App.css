@@ -1,0 +1,99 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.titleArea {
+  text-align: center;
+}
+.title {
+  margin: 0 8px;
+}
+
+.ms-DetailsHeader {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 36px;
+  z-index: 9999;
+}
+
+.ms-DetailsList {
+  padding-top: 36px;  
+}
+
+.vstack {  
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+  flex-direction: column;
+  margin: -4px 0;
+}
+
+.vstack > * {
+  margin: 4px 0;
+}
+
+.thumb {
+  margin: -10px 0;
+}
+
+.mybutton.refresh {
+  vertical-align: middle;
+}
+
+.reddit {
+  font-weight: inherit;
+}
+
+.inlineSpinner {
+  display: inline-block;
+  margin: 0 6px;
+  vertical-align: middle;
+}
+
+.loadingSpinner {
+  margin: 20px 0;
+}
+
+.itemMetadata span {
+  display: inline-block;
+  padding-top: 5px;  
+  padding-right: 10px;
+}
+
+.itemMetadata i {
+  vertical-align: middle;
+}
+
+.extra {
+  margin: 5px 45px;
+  
+  padding: 10px;
+  border: 1px solid #eaeaea;
+}
