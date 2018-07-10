@@ -36,7 +36,8 @@ const columns = [
     isResizable: true,  
     onRender: (item) => {
       if(item.icon == ''){
-        return <i className="ms-Icon ms-Icon--FabricFolderFill" aria-hidden="true"></i>
+        if('file' in item.value) return <i className="ms-Icon ms-Icon--FileTemplate" aria-hidden="true"></i>
+        else return <i className="ms-Icon ms-Icon--FabricFolderFill" aria-hidden="true"></i>
       }
       else{
         return <img src={item.icon}/>
@@ -51,7 +52,7 @@ const columns = [
     maxWidth: 300,
     isResizable: true,
     onRender: (item) => {
-      if(item.icon == ''){
+      if('folder' in item.value){
         return <Link href='' className="ms-font-m" style={{textDecoration:'none', color: 'black'}}>{item.name}</Link>
       }
       else{
@@ -187,7 +188,8 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
                 another: size,
                 index: i,
                 url: '',
-                path: ''
+                path: '',
+                value: value
               };
 
               let icon = '';
@@ -227,7 +229,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
         let obj = this._selection.getSelection()[0] as any;
         if(obj != undefined) {
           // console.log(obj);
-          if(obj.icon == "") this.updateList(obj);
+          if('folder' in obj.value) this.updateList(obj);
         }
       }
     });
