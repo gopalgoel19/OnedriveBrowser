@@ -22,6 +22,9 @@ import { Link } from 'office-ui-fabric-react/lib/Link';
 import { authContext } from './adalConfig';
 import { adalApiFetch } from './adalConfig';
 import { Breadcrumb, IBreadcrumbItem, IDividerAsProps } from 'office-ui-fabric-react/lib/Breadcrumb';
+import { BaseComponent } from 'office-ui-fabric-react/lib/Utilities';
+import { HoverCard, IExpandingCardProps } from 'office-ui-fabric-react/lib/HoverCard';
+import { buildColumns, IColumn } from 'office-ui-fabric-react/lib/DetailsList';
 // Register icons and pull the fonts from the default SharePoint cdn:
 initializeIcons();
 
@@ -250,10 +253,57 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
             columns={ columns }
             selectionMode= {SelectionMode.none}
             selection={this._selection}
+            // setKey="key"
+            onRenderItemColumn={this.onRenderItemColumn}
           />
         </div>
     );
   }
+
+  private onRenderItemColumn: any = (item: any, index: number, column: IColumn) => {
+    console.log('check');
+    const expandingCardProps: IExpandingCardProps = {
+      onRenderCompactCard: this._onRenderCompactCard,
+      onRenderExpandedCard: this._onRenderExpandedCard,
+      renderData: item
+    };
+    if (column.key == 'office') {
+      return (
+        <HoverCard id="myID1" expandingCardProps={expandingCardProps} instantOpenOnClick={true}>
+          <div className="HoverCard-item" data-is-focusable={true}>
+            {item.office}
+          </div>
+        </HoverCard>
+      );
+    }
+    return item[column.key];
+  };
+
+  private _onRenderCompactCard = (item: any): JSX.Element => {
+    return (
+      <div className="hoverCardExample-compactCard">
+
+      <span style={{display: 'inline-block', width: '100px', height: 'auto'}}>
+          <img aria-hidden="true" src="https://outlook.office365.com/owa/service.svc/s/GetPersonaPhoto?email=gogoe@microsoft.com&amp;UA=0&amp;size=HR64x64&amp;sc=1531221298381" style={{display: 'inline', width: '100px', height: 'auto', padding: '10px'}}/>
+      </span>
+      <span style={{display: 'inline-block'}} >
+          <ul>
+            <li>{item.value.lastModifiedBy.user.displayName}</li>
+            <li>{item.value.lastModifiedBy.user.email}</li>
+        </ul>
+      </span>
+      </div>
+    );
+  };
+
+  private _onRenderExpandedCard = (item: any): JSX.Element => {
+    // const { items, columns } = this.state;
+    return (
+      <div className="hoverCardExample-expandedCard">
+        {item.position}
+      </div>
+    );
+  };
 }
 
 export default App;
