@@ -57,9 +57,14 @@ const columns = [
     minWidth: 20, 
     maxWidth: 300,
     isResizable: true,
-    onRender: (item) => (
-      <Link href={item.url} target='_blank' className="ms-font-m" style={{textDecoration:'none', color: 'black'}}>{item.name}</Link>
-    )
+    onRender: (item) => {
+      if(item.icon == ''){
+        return <Link href='' className="ms-font-m" style={{textDecoration:'none', color: 'black'}}>{item.name}</Link>
+      }
+      else{
+        return <Link href={item.url} target='_blank' className="ms-font-m" style={{textDecoration:'none', color: 'black'}}>{item.name}</Link>
+      }
+    }
   },
   { 
     key: "position", 
@@ -132,22 +137,27 @@ const fileIcons: { name: string }[] = [
 // console.log(items);
 
 class App extends React.Component<{},{items: Array<any>}> {
-  constructor(props){
-    super(props);
-    
-    this.state = {
-      items: []
-    };
+  
+  private _selection: Selection;
+  
+  updateList: any = (obj) => {
+    this.fetchFromDrive('https://graph.microsoft.com/v1.0/me' + obj.path + "/" + obj.name + ":/children");
+  }
 
-
-    adalApiFetch(fetch, 'https://graph.microsoft.com/v1.0/me/drive/root/children', {}).then((response) => {
+  fetchFromDrive: any = (url) =>{
+    adalApiFetch(fetch, url, {}).then((response) => {
         // console.log(response);
         // This is where you deal with your API response. In this case, we            
         // interpret the response as JSON, and then call `setState` with the
         // pretty-printed JSON-stringified object.
         response.json().then((response) => {
             // console.log(responseJson.body);
-            console.log(JSON.stringify(response, null, 2));
+            // console.log(JSON.stringify(response, null, 2));
+
+            this.setState((prevState) => ({
+              items: []         
+            }));
+
             for (let i = 0; i < response.value.length; i++) { 
               let value = response.value[i];
               let size: any = value.size/1024;
@@ -169,7 +179,8 @@ class App extends React.Component<{},{items: Array<any>}> {
                 office: value.lastModifiedBy.user.displayName,
                 another: size,
                 index: i,
-                url: ''
+                url: '',
+                path: ''
               };
 
               let icon = '';
@@ -179,12 +190,9 @@ class App extends React.Component<{},{items: Array<any>}> {
                   icon = `https://static2.sharepointonline.com/files/fabric/assets/brand-icons/document/svg/${fileIcons[i].name}_16x1.svg`;
                 }
               }
-              if(icon == ''){
-                  // icon = `https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/onedrive_16x1.svg`;
-                  
-              }
               item.icon = icon;
               item.url = value.webUrl;
+              item.path = value.parentReference.path;
               this.setState((prevState) => ({
                 items: prevState.items.concat(item)
               }));
@@ -195,6 +203,30 @@ class App extends React.Component<{},{items: Array<any>}> {
         // Don't forget to handle errors!
         console.error(error);
       });
+  }
+
+  constructor(props){
+
+    super(props);
+    this.fetchFromDrive('https://graph.microsoft.com/v1.0/me/drive/root/children');
+    this.state = {
+      items: []
+    };
+
+    this._selection = new Selection({
+      onSelectionChanged: () => {
+        let obj = this._selection.getSelection()[0] as any;
+        if(obj != undefined) {
+          console.log(obj);
+          if(obj.icon == "") this.updateList(obj);
+        }
+        // this.setState({
+        //   // selectionDetails: this._getSelectionDetails(),
+        //   // isModalSelection: this._selection.isModal()
+
+        // });
+      }
+    });
 
     // this.clickHandler = new Selection({
     //   onSelectionChanged: () => {
@@ -211,11 +243,13 @@ class App extends React.Component<{},{items: Array<any>}> {
     return (
         <div>
           <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.0.0/css/fabric.min.css"/>
-          <p className="ms-font-su">OneDrive</p>
+          <div className="ms-BrandIcon--icon96 ms-BrandIcon--onedrive"></div>
+          <Link href='/' className="ms-font-xxl" style={{textDecoration:'none', color: 'black'}}>Files</Link>
           <DetailsList 
             items={ this.state.items }
             columns={ columns }
             selectionMode= {SelectionMode.none}
+            selection={this._selection}
           />
         </div>
     );
