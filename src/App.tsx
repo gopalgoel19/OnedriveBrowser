@@ -111,23 +111,57 @@ const fileIcons: { name: string }[] = [
 ];
 
 class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
-  
   private _selection: Selection;
-  
+
+  updateNavList: any = (obj) => {
+    this.setState((prevState) => {
+      let newList = prevState.folders; 
+      let found = false;
+      for(let i=0;i<prevState.folders.length;i++){
+        // console.log('finding...');
+        if(Object.is(prevState.folders[i],obj)){
+          newList = newList.slice(0,i+1);
+          found = true;
+          break;
+        }
+      }
+      if(!found){
+        newList = newList.concat(obj)
+      }
+      return {folders: newList};
+    });
+  }
+
   updateList: any = (obj) => {
     this.fetchFromDrive('https://graph.microsoft.com/v1.0/me' + obj.path + "/" + obj.name + ":/children");
-
+    // console.log(obj);
+    let newObj = { text: 'Files', key: 'root', onClick: this.onBreadcrumbItemClicked };
+    newObj.text = obj.name;
+    newObj.key = obj.path + "/" + obj.name;
+    // console.log(newObj);
+    this.updateNavList(newObj);
+    // console.log(this.state.folders);
   }
 
-  _onBreadcrumbItemClicked: any = (ev: React.MouseEvent<HTMLElement>, item: any) => {
-    alert(`Breadcrumb item with key "${item.key}" has been clicked.`);
+  onBreadcrumbItemClicked: any = (ev: React.MouseEvent<HTMLElement>, item: any) => {
+    // alert(`Breadcrumb item with key "${item.key}" has been clicked.`);
+    // console.log(item);
+    let url = '';
+    if(item.key == 'root') {
+      url = 'https://graph.microsoft.com/v1.0/me/drive/root/children';
+    }
+    else{
+      url = 'https://graph.microsoft.com/v1.0/me' + item.key + ":/children";
+    }
+    this.fetchFromDrive(url);
+    // console.log(item);
+    this.updateNavList(item);
   }
 
-  fetchFromDrive: any = (url) =>{
+  fetchFromDrive: any = (url) => {
     adalApiFetch(fetch, url, {}).then((response) => {
         response.json().then((response) => {
             // console.log(JSON.stringify(response, null, 2));
-
             this.setState((prevState) => ({
               items: []         
             }));
@@ -137,7 +171,6 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
               let size: any = value.size/1024;
               let d: any = new Date(value.lastModifiedDateTime);
               d = d.toString().slice(0,25);
-              // console.log(d);
               if(size>=1024){
                 size = size/1024;
                 size = size.toFixed(2) + " MB";
@@ -181,25 +214,24 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
     console.log(props);
   }
 
-  constructor(props){
+  
 
+  constructor(props){
     super(props);
-    this.fetchFromDrive('https://graph.microsoft.com/v1.0/me/drive/root/children');
     this.state = {
       items: [],
-      folders: []
+      folders: [{ text: 'Files', key: 'root', onClick: this.onBreadcrumbItemClicked }]
     };
-
     this._selection = new Selection({
       onSelectionChanged: () => {
         let obj = this._selection.getSelection()[0] as any;
         if(obj != undefined) {
-          console.log(obj);
+          // console.log(obj);
           if(obj.icon == "") this.updateList(obj);
         }
       }
     });
-  
+    this.fetchFromDrive('https://graph.microsoft.com/v1.0/me/drive/root/children');
   }
 
   public render() {
@@ -208,14 +240,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
           <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.0.0/css/fabric.min.css"/>
           <div className="ms-BrandIcon--icon96 ms-BrandIcon--onedrive"></div>
           <Breadcrumb
-          items={[
-            { text: 'Files', key: 'Files', onClick: this._onBreadcrumbItemClicked },
-            { text: 'This is folder 1', key: 'f1', onClick: this._onBreadcrumbItemClicked },
-            { text: 'This is folder 2', key: 'f2', onClick: this._onBreadcrumbItemClicked },
-            { text: 'This is folder 3', key: 'f3', onClick: this._onBreadcrumbItemClicked },
-            { text: 'This is folder 4', key: 'f4', onClick: this._onBreadcrumbItemClicked },
-            { text: 'This is folder 5', key: 'f5', onClick: this._onBreadcrumbItemClicked, isCurrentItem: true }
-          ]}
+          items={this.state.folders}
           ariaLabel={'Website breadcrumb'}
           />
           <DetailsList 
