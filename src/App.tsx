@@ -239,11 +239,22 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
     this.fetchFromDrive('https://graph.microsoft.com/v1.0/me/drive/root/children');
   }
 
+  logout: any = () => {
+    authContext.logOut();
+  }
+
   public render() {
     return (
         <div>
           <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.0.0/css/fabric.min.css"/>
           <div className="ms-BrandIcon--icon96 ms-BrandIcon--onedrive"></div>
+          <DefaultButton
+            data-automation-id="test"
+            allowDisabledFocus={true}
+            text="Logout"
+            onClick={this.logout}
+            style={{float:'right'}}
+          />
           <Breadcrumb
           items={this.state.folders}
           ariaLabel={'Website breadcrumb'}
