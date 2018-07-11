@@ -36,7 +36,7 @@ const columns = [
     fieldName: "icon", 
     minWidth: 20, 
     maxWidth: 20,
-    isResizable: true,  
+    isResizable: false,  
     onRender: (item) => {
       if(item.icon == ''){
         if('file' in item.value) return <i className="ms-Icon ms-Icon--FileTemplate" aria-hidden="true"></i>
