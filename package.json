@@ -1,6 +1,5 @@
 {
   "name": "onedrive",
-  "homepage" : "https://react-cally.azurewebsites.net/build",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
