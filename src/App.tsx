@@ -114,7 +114,11 @@ const fileIcons: { name: string }[] = [
   { name: 'xsn' }
 ];
 
-class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
+interface Users {  
+    id: object;
+}
+
+class App extends React.Component<{},{items: Array<any>, folders: Array<any>, users: Users}> {
   private _selection: Selection;
 
   updateNavList: any = (obj) => {
@@ -169,7 +173,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
             this.setState((prevState) => ({
               items: []         
             }));
-
+            let users = [];
             for (let i = 0; i < response.value.length; i++) { 
               let value = response.value[i];
               let size: any = value.size/1024;
@@ -207,7 +211,30 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
               item.path = value.parentReference.path;
               this.setState((prevState) => ({
                 items: prevState.items.concat(item)
-              }));
+              }));  
+              let userId = value.lastModifiedBy.user.id;
+              if((users.indexOf(userId) == -1)){
+                users.push(userId);
+              }
+            }
+            console.log(users);
+            for(let i=0;i<users.length;i++){
+              let id = users[i];
+              let url = "https://graph.microsoft.com/v1.0/users/" + id;
+              adalApiFetch(fetch, url, {}).then((response) => {
+                response.json().then((response) => {
+                    // console.log(JSON.stringify(response, null, 2));
+                    console.log(response);
+
+                    this.setState((prevState)=>{
+                      let newUsers: any = prevState.users;
+                      newUsers[id] = response;
+                      return {users: newUsers}
+                    });
+                });
+              }).catch((error) => {
+                console.error(error);
+              });
             }
         });
       }).catch((error) => {
@@ -225,7 +252,10 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
     super(props);
     this.state = {
       items: [],
-      folders: [{ text: 'Files', key: 'root', onClick: this.onBreadcrumbItemClicked }]
+      folders: [{ text: 'Files', key: 'root', onClick: this.onBreadcrumbItemClicked }],
+      users: {
+        id: {}
+      }
     };
     this._selection = new Selection({
       onSelectionChanged: () => {
@@ -272,7 +302,6 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
   }
 
   private onRenderItemColumn: any = (item: any, index: number, column: IColumn) => {
-    console.log('check');
     const expandingCardProps: IExpandingCardProps = {
       onRenderCompactCard: this._onRenderCompactCard,
       onRenderExpandedCard: this._onRenderExpandedCard,
@@ -291,16 +320,20 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
   };
 
   private _onRenderCompactCard = (item: any): JSX.Element => {
+    // console.log(item);
+    let id = item.value.lastModifiedBy.user.id;
+    let user = this.state.users[id];
     return (
       <div className="hoverCardExample-compactCard">
 
       <span style={{display: 'inline-block', width: '100px', height: 'auto'}}>
-          <img aria-hidden="true" src="https://outlook.office365.com/owa/service.svc/s/GetPersonaPhoto?email=gogoe@microsoft.com&amp;UA=0&amp;size=HR64x64&amp;sc=1531221298381" style={{display: 'inline', width: '100px', height: 'auto', padding: '10px'}}/>
+          <img aria-hidden="true" src="https://outlook.office365.com/owa/service.svc/s/GetPersonaPhoto?email=gogoe@microsoft.com&amp;UA=0&amp;size=HR64x64&amp;sc=1531221298381"
+          style={{display: 'inline', width: '100px', height: 'auto', padding: '10px', borderRadius: '50%'}}/>
       </span>
       <span style={{display: 'inline-block'}} >
           <ul>
-            <li>{item.value.lastModifiedBy.user.displayName}</li>
-            <li>{item.value.lastModifiedBy.user.email}</li>
+            <li>{user.displayName}</li>
+            <li>{user.jobTitle}</li>
         </ul>
       </span>
       </div>
@@ -308,10 +341,16 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>}> {
   };
 
   private _onRenderExpandedCard = (item: any): JSX.Element => {
-    // const { items, columns } = this.state;
+    let id = item.value.lastModifiedBy.user.id;
+    let user = this.state.users[id];
     return (
-      <div className="hoverCardExample-expandedCard">
-        {item.position}
+      <div className="hoverCardExample-expandedCard" style={{margin: '10px'}}>
+        <h3>Contact</h3>
+        <ul>
+          <li>{user.mail}</li>
+          <li>{user.officeLocation}</li>
+          <li>{user.businessPhones}</li>
+        </ul>
       </div>
     );
   };
