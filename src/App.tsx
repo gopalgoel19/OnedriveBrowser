@@ -217,20 +217,29 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
                 users.push(userId);
               }
             }
-            console.log(users);
+            // console.log(users);
             for(let i=0;i<users.length;i++){
               let id = users[i];
               let url = "https://graph.microsoft.com/v1.0/users/" + id;
               adalApiFetch(fetch, url, {}).then((response) => {
                 response.json().then((response) => {
                     // console.log(JSON.stringify(response, null, 2));
-                    console.log(response);
-
-                    this.setState((prevState)=>{
-                      let newUsers: any = prevState.users;
-                      newUsers[id] = response;
-                      return {users: newUsers}
-                    });
+                    let photourl = url + "/photo/$value";
+                    adalApiFetch(fetch, photourl, {})
+                      .then((res) => (res.blob()))
+                      .then((blob) => {
+                         let urlCreator = window.URL;
+                         let imageUrl = urlCreator.createObjectURL(blob);
+                         response.imageUrl = imageUrl;
+                        this.setState((prevState)=>{
+                          let newUsers: any = prevState.users;
+                          newUsers[id] = response;
+                          return {users: newUsers}
+                        });
+                      })
+                      .catch((error) => {
+                        console.error(error);
+                      });
                 });
               }).catch((error) => {
                 console.error(error);
@@ -327,7 +336,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
       <div className="hoverCardExample-compactCard">
 
       <span style={{display: 'inline-block', width: '100px', height: 'auto'}}>
-          <img aria-hidden="true" src="https://outlook.office365.com/owa/service.svc/s/GetPersonaPhoto?email=gogoe@microsoft.com&amp;UA=0&amp;size=HR64x64&amp;sc=1531221298381"
+          <img aria-hidden="true" src={user.imageUrl}
           style={{display: 'inline', width: '100px', height: 'auto', padding: '10px', borderRadius: '50%'}}/>
       </span>
       <span style={{display: 'inline-block'}} >
