@@ -343,10 +343,10 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
           
           <div className="hoverCardExample-expandedCard" style={{margin: '10px'}}>
             <div>
-              <span className="ms-Icon ms-Icon--Contact" aria-hidden="true" style={{padding: '2px'}}></span><span> {user.displayName}</span>
+              <span className="ms-Icon ms-Icon--Contact" aria-hidden="true" style={{padding: '2px'}}></span><span>{user.displayName}</span>
             </div>
             <div>
-              <span className="ms-Icon ms-Icon--Education" aria-hidden="true" style={{padding: '2px'}}></span><span> {user.jobTitle}</span>
+              <span className="ms-Icon ms-Icon--Education" aria-hidden="true" style={{padding: '2px'}}></span><span>{user.jobTitle}</span>
             </div>     
           </div>
       </span>
