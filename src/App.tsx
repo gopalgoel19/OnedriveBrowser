@@ -335,15 +335,20 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     return (
       <div className="hoverCardExample-compactCard">
 
-      <span style={{display: 'inline-block', width: '100px', height: 'auto'}}>
+      <span style={{display: 'inline-block', width: '140px', height: 'auto'}}>
           <img aria-hidden="true" src={user.imageUrl}
-          style={{display: 'inline', width: '100px', height: 'auto', padding: '10px', borderRadius: '50%'}}/>
+          style={{display: 'inline', width: '100%', height: 'auto', padding: '10px', borderRadius: '50%'}}/>
       </span>
-      <span style={{display: 'inline-block'}} >
-          <ul>
-            <li>{user.displayName}</li>
-            <li>{user.jobTitle}</li>
-        </ul>
+      <span style={{display: 'inline-block', padding: '0px'}} >
+          
+          <div className="hoverCardExample-expandedCard" style={{margin: '10px'}}>
+            <div>
+              <span className="ms-Icon ms-Icon--Contact" aria-hidden="true" style={{padding: '2px'}}></span><span> {user.displayName}</span>
+            </div>
+            <div>
+              <span> {user.jobTitle}</span>
+            </div>     
+          </div>
       </span>
       </div>
     );
@@ -355,11 +360,15 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     return (
       <div className="hoverCardExample-expandedCard" style={{margin: '10px'}}>
         <h3>Contact</h3>
-        <ul>
-          <li>{user.mail}</li>
-          <li>{user.officeLocation}</li>
-          <li>{user.businessPhones}</li>
-        </ul>
+        <div style={{padding: '2px'}}>
+          <span className="ms-Icon ms-Icon--MailSolid" aria-hidden="true" style={{padding: '5px'}}></span><span> {user.mail}</span>
+        </div>
+        <div style={{padding: '2px'}}>
+          <span className="ms-Icon ms-Icon--Location" aria-hidden="true" style={{padding: '5px'}}></span><span> {user.officeLocation}</span>
+        </div>
+        <div style={{padding: '2px'}}>
+          <span className="ms-Icon ms-Icon--Phone" aria-hidden="true" style={{padding: '5px'}}></span><span> {user.businessPhones}</span>
+        </div>      
       </div>
     );
   };
