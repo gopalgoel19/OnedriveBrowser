@@ -346,7 +346,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
               <span className="ms-Icon ms-Icon--Contact" aria-hidden="true" style={{padding: '2px'}}></span><span> {user.displayName}</span>
             </div>
             <div>
-              <span> {user.jobTitle}</span>
+              <span className="ms-Icon ms-Icon--Education" aria-hidden="true" style={{padding: '2px'}}></span><span> {user.jobTitle}</span>
             </div>     
           </div>
       </span>
@@ -359,15 +359,15 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     let user = this.state.users[id];
     return (
       <div className="hoverCardExample-expandedCard" style={{margin: '10px'}}>
-        <h3>Contact</h3>
+        <div className='ms-font-su'>Contact</div>
         <div style={{padding: '2px'}}>
-          <span className="ms-Icon ms-Icon--MailSolid" aria-hidden="true" style={{padding: '5px'}}></span><span> {user.mail}</span>
+          <span className="ms-Icon ms-Icon--MailSolid" aria-hidden="true" style={{padding: '5px'}}></span><span className='ms-font-m'> {user.mail}</span>
         </div>
         <div style={{padding: '2px'}}>
-          <span className="ms-Icon ms-Icon--Location" aria-hidden="true" style={{padding: '5px'}}></span><span> {user.officeLocation}</span>
+          <span className="ms-Icon ms-Icon--Location" aria-hidden="true" style={{padding: '5px'}}></span><span className='ms-font-m'> {user.officeLocation}</span>
         </div>
         <div style={{padding: '2px'}}>
-          <span className="ms-Icon ms-Icon--Phone" aria-hidden="true" style={{padding: '5px'}}></span><span> {user.businessPhones}</span>
+          <span className="ms-Icon ms-Icon--Phone" aria-hidden="true" style={{padding: '5px'}}></span><span className='ms-font-m'> {user.businessPhones}</span>
         </div>      
       </div>
     );
