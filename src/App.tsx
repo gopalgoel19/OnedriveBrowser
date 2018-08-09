@@ -58,25 +58,25 @@ const columns = [
     }
   },
   { 
-    key: "position", 
+    key: "modified", 
     name: "Modified",
-    fieldName: 'position',
+    fieldName: "modified",
     minWidth: 20, 
     maxWidth: 300,
     isResizable: true
   },
   { 
-    key: "office", 
+    key: "modifiedBy", 
     name: "Modified By",
-    fieldName: 'office',
+    fieldName: "modifiedBy",
     minWidth: 160, 
     maxWidth: 280,
     isResizable: true       
   },
   {
-    key: "another",
+    key: "size",
     name: 'Size',
-    fieldName: 'another',
+    fieldName: "size",
     minWidth: 70,
     maxWidth: 100
   }
@@ -176,9 +176,9 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
                 icon: '',
                 key: 'item' + i,
                 name: value.name,
-                position: d,
-                office: value.lastModifiedBy.user.displayName,
-                another: size,
+                modified: d,
+                modifiedBy: value.lastModifiedBy.user.displayName,
+                size: size,
                 index: i,
                 url: '',
                 path: '',
