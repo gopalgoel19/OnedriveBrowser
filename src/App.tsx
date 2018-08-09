@@ -1,7 +1,5 @@
 import './App.css';
 import * as React from 'react';
-import * as Moment from 'react-moment';
-import * as axios from 'axios';
 import {
   DocumentCard,
   DocumentCardActivity,
@@ -9,22 +7,18 @@ import {
   DocumentCardTitle
 } from 'office-ui-fabric-react/lib/DocumentCard';
 import { initializeIcons } from '@uifabric/icons';
-import { Fabric } from 'office-ui-fabric-react/lib/Fabric';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
-import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
 import {
   DetailsList,
-  DetailsListLayoutMode,
   Selection,
   SelectionMode
 } from 'office-ui-fabric-react/lib/DetailsList';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { authContext } from './adalConfig';
 import { adalApiFetch } from './adalConfig';
-import { Breadcrumb, IBreadcrumbItem, IDividerAsProps } from 'office-ui-fabric-react/lib/Breadcrumb';
-import { BaseComponent } from 'office-ui-fabric-react/lib/Utilities';
+import { Breadcrumb } from 'office-ui-fabric-react/lib/Breadcrumb';
 import { HoverCard, IExpandingCardProps } from 'office-ui-fabric-react/lib/HoverCard';
-import { buildColumns, IColumn } from 'office-ui-fabric-react/lib/DetailsList';
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList';
 // Register icons and pull the fonts from the default SharePoint cdn:
 initializeIcons();
 
@@ -64,25 +58,25 @@ const columns = [
     }
   },
   { 
-    key: "position", 
+    key: "modified", 
     name: "Modified",
-    fieldName: 'position',
+    fieldName: "modified",
     minWidth: 20, 
     maxWidth: 300,
     isResizable: true
   },
   { 
-    key: "office", 
+    key: "modifiedBy", 
     name: "Modified By",
-    fieldName: 'office',
+    fieldName: "modifiedBy",
     minWidth: 160, 
     maxWidth: 280,
     isResizable: true       
   },
   {
-    key: "another",
+    key: "size",
     name: 'Size',
-    fieldName: 'another',
+    fieldName: "size",
     minWidth: 70,
     maxWidth: 100
   }
@@ -126,7 +120,6 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
       let newList = prevState.folders; 
       let found = false;
       for(let i=0;i<prevState.folders.length;i++){
-        // console.log('finding...');
         if(Object.is(prevState.folders[i],obj)){
           newList = newList.slice(0,i+1);
           found = true;
@@ -142,18 +135,13 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
 
   updateList: any = (obj) => {
     this.fetchFromDrive('https://graph.microsoft.com/v1.0/me' + obj.path + "/" + obj.name + ":/children");
-    // console.log(obj);
     let newObj = { text: 'Files', key: 'root', onClick: this.onBreadcrumbItemClicked };
     newObj.text = obj.name;
     newObj.key = obj.path + "/" + obj.name;
-    // console.log(newObj);
     this.updateNavList(newObj);
-    // console.log(this.state.folders);
   }
 
   onBreadcrumbItemClicked: any = (ev: React.MouseEvent<HTMLElement>, item: any) => {
-    // alert(`Breadcrumb item with key "${item.key}" has been clicked.`);
-    // console.log(item);
     let url = '';
     if(item.key == 'root') {
       url = 'https://graph.microsoft.com/v1.0/me/drive/root/children';
@@ -162,14 +150,12 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
       url = 'https://graph.microsoft.com/v1.0/me' + item.key + ":/children";
     }
     this.fetchFromDrive(url);
-    // console.log(item);
     this.updateNavList(item);
   }
 
   fetchFromDrive: any = (url) => {
     adalApiFetch(fetch, url, {}).then((response) => {
         response.json().then((response) => {
-            // console.log(JSON.stringify(response, null, 2));
             this.setState((prevState) => ({
               items: []         
             }));
@@ -190,9 +176,9 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
                 icon: '',
                 key: 'item' + i,
                 name: value.name,
-                position: d,
-                office: value.lastModifiedBy.user.displayName,
-                another: size,
+                modified: d,
+                modifiedBy: value.lastModifiedBy.user.displayName,
+                size: size,
                 index: i,
                 url: '',
                 path: '',
@@ -217,13 +203,11 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
                 users.push(userId);
               }
             }
-            // console.log(users);
             for(let i=0;i<users.length;i++){
               let id = users[i];
               let url = "https://graph.microsoft.com/v1.0/users/" + id;
               adalApiFetch(fetch, url, {}).then((response) => {
                 response.json().then((response) => {
-                    // console.log(JSON.stringify(response, null, 2));
                     let photourl = url + "/photo/$value";
                     adalApiFetch(fetch, photourl, {})
                       .then((res) => (res.blob()))
@@ -255,8 +239,6 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     console.log(props);
   }
 
-  
-
   constructor(props){
     super(props);
     this.state = {
@@ -270,7 +252,6 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
       onSelectionChanged: () => {
         let obj = this._selection.getSelection()[0] as any;
         if(obj != undefined) {
-          // console.log(obj);
           if('folder' in obj.value) this.updateList(obj);
         }
       }
@@ -303,7 +284,6 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
             columns={ columns }
             selectionMode= {SelectionMode.none}
             selection={this._selection}
-            // setKey="key"
             onRenderItemColumn={this.onRenderItemColumn}
           />
         </div>
@@ -329,7 +309,6 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
   };
 
   private _onRenderCompactCard = (item: any): JSX.Element => {
-    // console.log(item);
     let id = item.value.lastModifiedBy.user.id;
     let user = this.state.users[id];
     return (
