@@ -19,6 +19,7 @@ import { adalApiFetch } from './adalConfig';
 import { Breadcrumb } from 'office-ui-fabric-react/lib/Breadcrumb';
 import { HoverCard, IExpandingCardProps } from 'office-ui-fabric-react/lib/HoverCard';
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList';
+import { fileIcons } from './fileicons';
 // Register icons and pull the fonts from the default SharePoint cdn:
 initializeIcons();
 
@@ -80,32 +81,6 @@ const columns = [
     minWidth: 70,
     maxWidth: 100
   }
-];
-             
-const fileIcons: { name: string }[] = [
-  { name: 'accdb' },
-  { name: 'csv' },
-  { name: 'docx' },
-  { name: 'dotx' },
-  { name: 'mpp' },
-  { name: 'mpt' },
-  { name: 'odp' },
-  { name: 'ods' },
-  { name: 'odt' },
-  { name: 'one' },
-  { name: 'onepkg' },
-  { name: 'onetoc' },
-  { name: 'potx' },
-  { name: 'ppsx' },
-  { name: 'pptx' },
-  { name: 'pub' },
-  { name: 'vsdx' },
-  { name: 'vssx' },
-  { name: 'vstx' },
-  { name: 'xls' },
-  { name: 'xlsx' },
-  { name: 'xltx' },
-  { name: 'xsn' }
 ];
 
 interface Users {  
