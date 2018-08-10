@@ -7,16 +7,16 @@ import {
   DocumentCardTitle
 } from 'office-ui-fabric-react/lib/DocumentCard';
 import { initializeIcons } from '@uifabric/icons';
-import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
+
 import {
   Selection,
 } from 'office-ui-fabric-react/lib/DetailsList';
 import { Link } from 'office-ui-fabric-react/lib/Link';
-import { authContext } from './adalConfig';
 import { adalApiFetch } from './adalConfig';
 import { Breadcrumb } from 'office-ui-fabric-react/lib/Breadcrumb';
 import { fileIcons } from './fileicons';
 import { ItemsList } from './components/ItemsList';
+import { Head } from './components/Head';
 // Register icons and pull the fonts from the default SharePoint cdn:
 initializeIcons();
 
@@ -83,7 +83,7 @@ const columns = [
 interface Users {  
     id: object;
 }
-
+ 
 class App extends React.Component<{},{items: Array<any>, folders: Array<any>, users: Users}> {
   public _selection: Selection;
 
@@ -227,25 +227,12 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     this.fetchFromDrive('https://graph.microsoft.com/v1.0/me/drive/root/children');
   }
 
-  logout: any = () => {
-    authContext.logOut();
-  }
-
   public render() {
     return (
         <div>
-          <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.0.0/css/fabric.min.css"/>
-          <div className="ms-BrandIcon--icon96 ms-BrandIcon--onedrive"></div>
-          <DefaultButton
-            data-automation-id="test"
-            allowDisabledFocus={true}
-            text="Logout"
-            onClick={this.logout}
-            style={{float:'right'}}
-          />
+          <Head />
           <Breadcrumb
           items={this.state.folders}
-          ariaLabel={'Website breadcrumb'}
           />
           <ItemsList 
             items={ this.state.items }
