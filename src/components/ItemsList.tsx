@@ -7,19 +7,14 @@ import {
   DocumentCardTitle
 } from 'office-ui-fabric-react/lib/DocumentCard';
 import { initializeIcons } from '@uifabric/icons';
-import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import {
   DetailsList,
   Selection,
   SelectionMode
 } from 'office-ui-fabric-react/lib/DetailsList';
 import { Link } from 'office-ui-fabric-react/lib/Link';
-import { authContext } from './../adalConfig';
-import { adalApiFetch } from './../adalConfig';
-import { Breadcrumb } from 'office-ui-fabric-react/lib/Breadcrumb';
 import { HoverCard, IExpandingCardProps } from 'office-ui-fabric-react/lib/HoverCard';
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList';
-import { fileIcons } from './../fileicons';
 // Register icons and pull the fonts from the default SharePoint cdn:
 initializeIcons();
 
@@ -87,8 +82,7 @@ interface Users {
     id: object;
 }
 
-export class ItemsList extends React.Component<{items: Array<any>, selection: Selection, users: Users, columns: any},{}> {
-
+export class ItemsList extends React.Component<{items: Array<any>, selection: Selection, users: Users},{}> {
 
   public render() {
     return (

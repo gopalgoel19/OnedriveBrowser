@@ -20,69 +20,25 @@ import { Head } from './components/Head';
 // Register icons and pull the fonts from the default SharePoint cdn:
 initializeIcons();
 
-
-const columns = [
-  { 
-    key: "icon", 
-    name: "...", 
-    fieldName: "icon", 
-    minWidth: 20, 
-    maxWidth: 20,
-    isResizable: false,  
-    onRender: (item) => {
-      if(item.icon == ''){
-        if('file' in item.value) return <i className="ms-Icon ms-Icon--FileTemplate" aria-hidden="true"></i>
-        else return <i className="ms-Icon ms-Icon--FabricFolderFill" aria-hidden="true"></i>
-      }
-      else{
-        return <img src={item.icon}/>
-      }
-    }
-  },
-  { 
-    key: "name", 
-    name: "Name", 
-    fieldName: "name", 
-    minWidth: 20, 
-    maxWidth: 300,
-    isResizable: true,
-    onRender: (item) => {
-      if('folder' in item.value){
-        return <Link href='' className="ms-font-m" style={{textDecoration:'none', color: 'black'}}>{item.name}</Link>
-      }
-      else{
-        return <Link href={item.url} target='_blank' className="ms-font-m" style={{textDecoration:'none', color: 'black'}}>{item.name}</Link>
-      }
-    }
-  },
-  { 
-    key: "modified", 
-    name: "Modified",
-    fieldName: "modified",
-    minWidth: 20, 
-    maxWidth: 300,
-    isResizable: true
-  },
-  { 
-    key: "modifiedBy", 
-    name: "Modified By",
-    fieldName: "modifiedBy",
-    minWidth: 160, 
-    maxWidth: 280,
-    isResizable: true       
-  },
-  {
-    key: "size",
-    name: 'Size',
-    fieldName: "size",
-    minWidth: 70,
-    maxWidth: 100
-  }
-];
-
 interface Users {  
     id: object;
 }
+
+let getSizeAsString = (sizeInBytes) => {
+  let size: any = sizeInBytes/1024;
+  if(size<1024){
+    size = size.toFixed(2) + " KB";
+    return size;
+  }
+  size = size/1024;
+  if(size<1024){
+    size = size.toFixed(2) + " MB";
+    return size;
+  }
+  size = size/1024;
+  size = size.toFixed(2) + " GB";
+  return size;
+};
  
 class App extends React.Component<{},{items: Array<any>, folders: Array<any>, users: Users}> {
   public _selection: Selection;
@@ -125,6 +81,61 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     this.updateNavList(item);
   }
 
+  updateUsersState: any = (users) => {
+    for(let i=0;i<users.length;i++){
+      let id = users[i];
+      let url = "https://graph.microsoft.com/v1.0/users/" + id;
+      adalApiFetch(fetch, url, {}).then((response) => {
+        response.json().then((response) => {
+            let photourl = url + "/photo/$value";
+            adalApiFetch(fetch, photourl, {})
+              .then((res) => (res.blob()))
+              .then((blob) => {
+                 let urlCreator = window.URL;
+                 let imageUrl = urlCreator.createObjectURL(blob);
+                 response.imageUrl = imageUrl;
+                this.setState((prevState)=>{
+                  let newUsers: any = prevState.users;
+                  newUsers[id] = response;
+                  return {users: newUsers}
+                });
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+        });
+      }).catch((error) => {
+        console.error(error);
+      });
+    }
+  }
+
+  pushItemToStateItems: any = (value) => {
+    let item = {
+      icon: '',
+      key: value.name,
+      name: value.name,
+      modified: new Date(value.lastModifiedDateTime).toString().slice(0,25),
+      modifiedBy: value.lastModifiedBy.user.displayName,
+      size: getSizeAsString(value.size),
+      url: value.webUrl,
+      path: value.parentReference.path,
+      value: value
+    };
+    let icon = '';
+    let name = value.name;
+    for (let i=0; i< fileIcons.length ; i++){
+      if(name.endsWith('.' + fileIcons[i].name)){
+        icon = `https://static2.sharepointonline.com/files/fabric/assets/brand-icons/document/svg/${fileIcons[i].name}_16x1.svg`;
+      }
+    }
+    item.icon = icon;
+
+    this.setState((prevState) => ({
+      items: prevState.items.concat(item)
+    }));  
+  }
+
   fetchFromDrive: any = (url) => {
     adalApiFetch(fetch, url, {}).then((response) => {
         response.json().then((response) => {
@@ -132,75 +143,18 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
               items: []         
             }));
             let users = [];
-            for (let i = 0; i < response.value.length; i++) { 
-              let value = response.value[i];
-              let size: any = value.size/1024;
-              let d: any = new Date(value.lastModifiedDateTime);
-              d = d.toString().slice(0,25);
-              if(size>=1024){
-                size = size/1024;
-                size = size.toFixed(2) + " MB";
-              }
-              else{
-                size = size.toFixed(2) + " KB"
-              }
-              let item = {
-                icon: '',
-                key: 'item' + i,
-                name: value.name,
-                modified: d,
-                modifiedBy: value.lastModifiedBy.user.displayName,
-                size: size,
-                index: i,
-                url: '',
-                path: '',
-                value: value
-              };
 
-              let icon = '';
-              let name = value.name;
-              for (let i=0; i< fileIcons.length ; i++){
-                if(name.endsWith('.' + fileIcons[i].name)){
-                  icon = `https://static2.sharepointonline.com/files/fabric/assets/brand-icons/document/svg/${fileIcons[i].name}_16x1.svg`;
-                }
-              }
-              item.icon = icon;
-              item.url = value.webUrl;
-              item.path = value.parentReference.path;
-              this.setState((prevState) => ({
-                items: prevState.items.concat(item)
-              }));  
+            for (let i = 0; i < response.value.length; i++) { 
+              let value = response.value[i];              
+              this.pushItemToStateItems(value);
+
               let userId = value.lastModifiedBy.user.id;
               if((users.indexOf(userId) == -1)){
                 users.push(userId);
               }
             }
-            for(let i=0;i<users.length;i++){
-              let id = users[i];
-              let url = "https://graph.microsoft.com/v1.0/users/" + id;
-              adalApiFetch(fetch, url, {}).then((response) => {
-                response.json().then((response) => {
-                    let photourl = url + "/photo/$value";
-                    adalApiFetch(fetch, photourl, {})
-                      .then((res) => (res.blob()))
-                      .then((blob) => {
-                         let urlCreator = window.URL;
-                         let imageUrl = urlCreator.createObjectURL(blob);
-                         response.imageUrl = imageUrl;
-                        this.setState((prevState)=>{
-                          let newUsers: any = prevState.users;
-                          newUsers[id] = response;
-                          return {users: newUsers}
-                        });
-                      })
-                      .catch((error) => {
-                        console.error(error);
-                      });
-                });
-              }).catch((error) => {
-                console.error(error);
-              });
-            }
+
+            this.updateUsersState(users);
         });
       }).catch((error) => {
         console.error(error);
@@ -232,11 +186,10 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
         <div>
           <Head />
           <Breadcrumb
-          items={this.state.folders}
+            items={this.state.folders}
           />
           <ItemsList 
             items={ this.state.items }
-            columns={ columns }
             selection={this._selection}
             users={this.state.users}
           />
