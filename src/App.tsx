@@ -74,17 +74,17 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
 
   updateBreadCrumbList: any = (obj) => {
     let newBreadcrumbObj = { text: 'Files', key: 'root', onClick: this.onBreadcrumbItemClicked };
-    newBreadcrumbObj.text = obj.name;
-    newBreadcrumbObj.key = obj.path + "/" + obj.name;
+    if(obj.name) newBreadcrumbObj.text = obj.name;
+    if(obj.path && obj.name) newBreadcrumbObj.key = obj.path + "/" + obj.name;
     this.setState((prevState) => {
       let newList = prevState.folders; 
       let found = false;
       for(let i=0;i<prevState.folders.length;i++){
-        if(Object.is(prevState.folders[i],newBreadcrumbObj)){
+        if( prevState.folders[i].key == newBreadcrumbObj.key){
           newList = newList.slice(0,i+1);
           found = true;
           break;
-        }
+        } 
       }
       if(!found){
         newList = newList.concat(newBreadcrumbObj)
@@ -173,8 +173,9 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     this._selection = new Selection({
       onSelectionChanged: () => {
         let obj = this._selection.getSelection()[0] as any;
+        // console.log(obj);
         if(obj != undefined) {
-          if('folder' in obj.value) this.loadNewFolderData(obj);
+          if(obj.type === "folder") this.loadNewFolderData(obj);
         }
       }
     });

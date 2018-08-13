@@ -1,13 +1,6 @@
 
 import * as React from 'react';
 import {
-  DocumentCard,
-  DocumentCardActivity,
-  DocumentCardPreview,
-  DocumentCardTitle
-} from 'office-ui-fabric-react/lib/DocumentCard';
-import { initializeIcons } from '@uifabric/icons';
-import {
   DetailsList,
   Selection,
   SelectionMode
@@ -15,8 +8,7 @@ import {
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { HoverCard, IExpandingCardProps } from 'office-ui-fabric-react/lib/HoverCard';
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList';
-// Register icons and pull the fonts from the default SharePoint cdn:
-initializeIcons();
+
 
 const columns = [
   { 
