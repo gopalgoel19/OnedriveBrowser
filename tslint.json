@@ -5,21 +5,21 @@
       "config/**/*.js",
       "node_modules/**/*.ts",
       "src/*.tsx",
-      "src/*.js"
+      "src/*.js",
+      "src/components/*.tsx"
     ]
   },
   "rules": {
   	"ordered-imports": [true, {
-	  "import-sources-order": "any",
-	  "named-imports-order": "case-insensitive"
-	}],
-	"object-literal-sort-keys": false,
-	"prefer-const": false,
-	"variable-name": [
+      "import-sources-order": "any",
+      "named-imports-order": "case-insensitive"
+    }],
+    "object-literal-sort-keys": false,
+    "prefer-const": false,
+    "variable-name": [
       true,
       "ban-keywords",
       "allow-leading-underscore"
     ]
   }
-  // "ordered-imports": false
 }

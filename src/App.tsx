@@ -7,18 +7,16 @@ import {
   DocumentCardTitle
 } from 'office-ui-fabric-react/lib/DocumentCard';
 import { initializeIcons } from '@uifabric/icons';
-import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
+
 import {
-  DetailsList,
   Selection,
-  SelectionMode
 } from 'office-ui-fabric-react/lib/DetailsList';
 import { Link } from 'office-ui-fabric-react/lib/Link';
-import { authContext } from './adalConfig';
 import { adalApiFetch } from './adalConfig';
 import { Breadcrumb } from 'office-ui-fabric-react/lib/Breadcrumb';
-import { HoverCard, IExpandingCardProps } from 'office-ui-fabric-react/lib/HoverCard';
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList';
+import { fileIcons } from './fileicons';
+import { ItemsList } from './components/ItemsList';
+import { Head } from './components/Head';
 // Register icons and pull the fonts from the default SharePoint cdn:
 initializeIcons();
 
@@ -81,39 +79,13 @@ const columns = [
     maxWidth: 100
   }
 ];
-             
-const fileIcons: { name: string }[] = [
-  { name: 'accdb' },
-  { name: 'csv' },
-  { name: 'docx' },
-  { name: 'dotx' },
-  { name: 'mpp' },
-  { name: 'mpt' },
-  { name: 'odp' },
-  { name: 'ods' },
-  { name: 'odt' },
-  { name: 'one' },
-  { name: 'onepkg' },
-  { name: 'onetoc' },
-  { name: 'potx' },
-  { name: 'ppsx' },
-  { name: 'pptx' },
-  { name: 'pub' },
-  { name: 'vsdx' },
-  { name: 'vssx' },
-  { name: 'vstx' },
-  { name: 'xls' },
-  { name: 'xlsx' },
-  { name: 'xltx' },
-  { name: 'xsn' }
-];
 
 interface Users {  
     id: object;
 }
-
+ 
 class App extends React.Component<{},{items: Array<any>, folders: Array<any>, users: Users}> {
-  private _selection: Selection;
+  public _selection: Selection;
 
   updateNavList: any = (obj) => {
     this.setState((prevState) => {
@@ -235,10 +207,6 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
       });
   }
 
-  navLinkUpdate: any = (props) => {
-    console.log(props);
-  }
-
   constructor(props){
     super(props);
     this.state = {
@@ -259,98 +227,22 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     this.fetchFromDrive('https://graph.microsoft.com/v1.0/me/drive/root/children');
   }
 
-  logout: any = () => {
-    authContext.logOut();
-  }
-
   public render() {
     return (
         <div>
-          <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.0.0/css/fabric.min.css"/>
-          <div className="ms-BrandIcon--icon96 ms-BrandIcon--onedrive"></div>
-          <DefaultButton
-            data-automation-id="test"
-            allowDisabledFocus={true}
-            text="Logout"
-            onClick={this.logout}
-            style={{float:'right'}}
-          />
+          <Head />
           <Breadcrumb
           items={this.state.folders}
-          ariaLabel={'Website breadcrumb'}
           />
-          <DetailsList 
+          <ItemsList 
             items={ this.state.items }
             columns={ columns }
-            selectionMode= {SelectionMode.none}
             selection={this._selection}
-            onRenderItemColumn={this.onRenderItemColumn}
+            users={this.state.users}
           />
         </div>
     );
   }
-
-  private onRenderItemColumn: any = (item: any, index: number, column: IColumn) => {
-    const expandingCardProps: IExpandingCardProps = {
-      onRenderCompactCard: this._onRenderCompactCard,
-      onRenderExpandedCard: this._onRenderExpandedCard,
-      renderData: item
-    };
-    if (column.key == 'office') {
-      return (
-        <HoverCard id="myID1" expandingCardProps={expandingCardProps} instantOpenOnClick={true}>
-          <div className="HoverCard-item" data-is-focusable={true}>
-            {item.office}
-          </div>
-        </HoverCard>
-      );
-    }
-    return item[column.key];
-  };
-
-  private _onRenderCompactCard = (item: any): JSX.Element => {
-    let id = item.value.lastModifiedBy.user.id;
-    let user = this.state.users[id];
-    return (
-      <div className="hoverCardExample-compactCard">
-
-      <span style={{display: 'inline-block', width: '140px', height: 'auto'}}>
-          <img aria-hidden="true" src={user.imageUrl}
-          style={{display: 'inline', width: '100%', height: 'auto', padding: '10px', borderRadius: '50%'}}/>
-      </span>
-      <span style={{display: 'inline-block', padding: '0px'}} >
-          
-          <div className="hoverCardExample-expandedCard" style={{margin: '10px'}}>
-            <div>
-              <span className="ms-Icon ms-Icon--Contact" aria-hidden="true" style={{padding: '2px'}}></span><span>{user.displayName}</span>
-            </div>
-            <div>
-              <span className="ms-Icon ms-Icon--Education" aria-hidden="true" style={{padding: '2px'}}></span><span>{user.jobTitle}</span>
-            </div>     
-          </div>
-      </span>
-      </div>
-    );
-  };
-
-  private _onRenderExpandedCard = (item: any): JSX.Element => {
-    let id = item.value.lastModifiedBy.user.id;
-    let user = this.state.users[id];
-    return (
-      <div className="hoverCardExample-expandedCard" style={{margin: '10px'}}>
-        <div className='ms-font-su'>Contact</div>
-        <div style={{padding: '2px'}}>
-          <span className="ms-Icon ms-Icon--MailSolid" aria-hidden="true" style={{padding: '5px'}}></span><span className='ms-font-m'> {user.mail}</span>
-        </div>
-        <div style={{padding: '2px'}}>
-          <span className="ms-Icon ms-Icon--Location" aria-hidden="true" style={{padding: '5px'}}></span><span className='ms-font-m'> {user.officeLocation}</span>
-        </div>
-        <div style={{padding: '2px'}}>
-          <span className="ms-Icon ms-Icon--Phone" aria-hidden="true" style={{padding: '5px'}}></span><span className='ms-font-m'> {user.businessPhones}</span>
-        </div>      
-      </div>
-    );
-  };
 }
 
 export default App;
