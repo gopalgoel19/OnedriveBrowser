@@ -100,6 +100,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
       name: value.name,
       modified: new Date(value.lastModifiedDateTime).toString().slice(0,25),
       modifiedBy: value.lastModifiedBy.user.displayName,
+      modifiedByUserId: value.lastModifiedBy.user.id,
       size: getSizeAsString(value.size),
       url: value.webUrl,
       path: value.parentReference.path,

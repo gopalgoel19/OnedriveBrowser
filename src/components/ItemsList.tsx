@@ -101,11 +101,11 @@ export class ItemsList extends React.Component<{items: Array<any>, selection: Se
       onRenderExpandedCard: this._onRenderExpandedCard,
       renderData: item
     };
-    if (column.key == 'office') {
+    if (column.key === 'modifiedBy') {
       return (
         <HoverCard id="myID1" expandingCardProps={expandingCardProps} instantOpenOnClick={true}>
           <div className="HoverCard-item" data-is-focusable={true}>
-            {item.office}
+            {item.modifiedBy}
           </div>
         </HoverCard>
       );
@@ -114,7 +114,7 @@ export class ItemsList extends React.Component<{items: Array<any>, selection: Se
   };
 
   private _onRenderCompactCard = (item: any): JSX.Element => {
-    let id = item.value.lastModifiedBy.user.id;
+    let id = item.modifiedByUserId;
     let user = this.props.users[id];
     return (
       <div className="hoverCardExample-compactCard">
@@ -139,7 +139,7 @@ export class ItemsList extends React.Component<{items: Array<any>, selection: Se
   };
 
   private _onRenderExpandedCard = (item: any): JSX.Element => {
-    let id = item.value.lastModifiedBy.user.id;
+    let id = item.modifiedByUserId;
     let user = this.props.users[id];
     return (
       <div className="hoverCardExample-expandedCard" style={{margin: '10px'}}>
