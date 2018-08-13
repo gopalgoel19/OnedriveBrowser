@@ -1,13 +1,6 @@
 import './App.css';
 import * as React from 'react';
-import {
-  DocumentCard,
-  DocumentCardActivity,
-  DocumentCardPreview,
-  DocumentCardTitle
-} from 'office-ui-fabric-react/lib/DocumentCard';
 import { initializeIcons } from '@uifabric/icons';
-
 import {
   Selection,
 } from 'office-ui-fabric-react/lib/DetailsList';
