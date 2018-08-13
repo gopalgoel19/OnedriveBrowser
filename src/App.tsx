@@ -42,42 +42,81 @@ let getSizeAsString = (sizeInBytes) => {
 class App extends React.Component<{},{items: Array<any>, folders: Array<any>, users: Users}> {
   public _selection: Selection;
 
-  updateBreadCrumbList: any = (breadcrumbObject) => {
+  loadNewFolderData: any = (obj) => {
+    this.fetchItemsFromOneDrive('https://graph.microsoft.com/v1.0/me' + obj.path + "/" + obj.name + ":/children");
+    this.updateBreadCrumbList(obj);
+  }
+  
+  fetchItemsFromOneDrive: any = (url) => {
+    adalApiFetch(fetch, url, {}).then((response) => {
+        response.json().then((response) => {
+            this.setState((prevState) => ({
+              items: []         
+            }));
+            let users = [];
+
+            for (let i = 0; i < response.value.length; i++) { 
+              let value = response.value[i];              
+              this.pushItemToStateItemsList(value);
+
+              let userId = value.lastModifiedBy.user.id;
+              if((users.indexOf(userId) == -1)){
+                users.push(userId);
+              }
+            }
+
+            this.fetchUsersDataFromOneDrive(users);
+        });
+      }).catch((error) => {
+        console.error(error);
+      });
+  }
+
+  updateBreadCrumbList: any = (obj) => {
+    let newBreadcrumbObj = { text: 'Files', key: 'root', onClick: this.onBreadcrumbItemClicked };
+    newBreadcrumbObj.text = obj.name;
+    newBreadcrumbObj.key = obj.path + "/" + obj.name;
     this.setState((prevState) => {
       let newList = prevState.folders; 
       let found = false;
       for(let i=0;i<prevState.folders.length;i++){
-        if(Object.is(prevState.folders[i],breadcrumbObject)){
+        if(Object.is(prevState.folders[i],newBreadcrumbObj)){
           newList = newList.slice(0,i+1);
           found = true;
           break;
         }
       }
       if(!found){
-        newList = newList.concat(breadcrumbObject)
+        newList = newList.concat(newBreadcrumbObj)
       }
       return {folders: newList};
     });
   }
 
-  updateList: any = (obj) => {
-    this.fetchItemsFromOneDrive('https://graph.microsoft.com/v1.0/me' + obj.path + "/" + obj.name + ":/children");
-    let newBreadcrumbObj = { text: 'Files', key: 'root', onClick: this.onBreadcrumbItemClicked };
-    newBreadcrumbObj.text = obj.name;
-    newBreadcrumbObj.key = obj.path + "/" + obj.name;
-    this.updateBreadCrumbList(newBreadcrumbObj);
-  }
+  pushItemToStateItemsList: any = (value) => {
+    let item = {
+      icon: '',
+      key: value.name,
+      name: value.name,
+      modified: new Date(value.lastModifiedDateTime).toString().slice(0,25),
+      modifiedBy: value.lastModifiedBy.user.displayName,
+      size: getSizeAsString(value.size),
+      url: value.webUrl,
+      path: value.parentReference.path,
+      type: 'file' in value ? "file" : "folder"
+    };
+    let icon = '';
+    let name = value.name;
+    for (let i=0; i< fileIcons.length ; i++){
+      if(name.endsWith('.' + fileIcons[i].name)){
+        icon = `https://static2.sharepointonline.com/files/fabric/assets/brand-icons/document/svg/${fileIcons[i].name}_16x1.svg`;
+      }
+    }
+    item.icon = icon;
 
-  onBreadcrumbItemClicked: any = (ev: React.MouseEvent<HTMLElement>, item: any) => {
-    let url = '';
-    if(item.key == 'root') {
-      url = 'https://graph.microsoft.com/v1.0/me/drive/root/children';
-    }
-    else{
-      url = 'https://graph.microsoft.com/v1.0/me' + item.key + ":/children";
-    }
-    this.fetchItemsFromOneDrive(url);
-    this.updateBreadCrumbList(item);
+    this.setState((prevState) => ({
+      items: prevState.items.concat(item)
+    }));  
   }
 
   fetchUsersDataFromOneDrive: any = (users) => {
@@ -109,55 +148,16 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     }
   }
 
-  pushItemToStateItemsList: any = (value) => {
-    let item = {
-      icon: '',
-      key: value.name,
-      name: value.name,
-      modified: new Date(value.lastModifiedDateTime).toString().slice(0,25),
-      modifiedBy: value.lastModifiedBy.user.displayName,
-      size: getSizeAsString(value.size),
-      url: value.webUrl,
-      path: value.parentReference.path,
-      type: 'file' in value ? "file" : "folder"
-    };
-    let icon = '';
-    let name = value.name;
-    for (let i=0; i< fileIcons.length ; i++){
-      if(name.endsWith('.' + fileIcons[i].name)){
-        icon = `https://static2.sharepointonline.com/files/fabric/assets/brand-icons/document/svg/${fileIcons[i].name}_16x1.svg`;
-      }
+  onBreadcrumbItemClicked: any = (ev: React.MouseEvent<HTMLElement>, item: any) => {
+    let url = '';
+    if(item.key == 'root') {
+      url = 'https://graph.microsoft.com/v1.0/me/drive/root/children';
     }
-    item.icon = icon;
-
-    this.setState((prevState) => ({
-      items: prevState.items.concat(item)
-    }));  
-  }
-
-  fetchItemsFromOneDrive: any = (url) => {
-    adalApiFetch(fetch, url, {}).then((response) => {
-        response.json().then((response) => {
-            this.setState((prevState) => ({
-              items: []         
-            }));
-            let users = [];
-
-            for (let i = 0; i < response.value.length; i++) { 
-              let value = response.value[i];              
-              this.pushItemToStateItemsList(value);
-
-              let userId = value.lastModifiedBy.user.id;
-              if((users.indexOf(userId) == -1)){
-                users.push(userId);
-              }
-            }
-
-            this.fetchUsersDataFromOneDrive(users);
-        });
-      }).catch((error) => {
-        console.error(error);
-      });
+    else{
+      url = 'https://graph.microsoft.com/v1.0/me' + item.key + ":/children";
+    }
+    this.fetchItemsFromOneDrive(url);
+    this.updateBreadCrumbList(item);
   }
 
   constructor(props){
@@ -173,7 +173,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
       onSelectionChanged: () => {
         let obj = this._selection.getSelection()[0] as any;
         if(obj != undefined) {
-          if('folder' in obj.value) this.updateList(obj);
+          if('folder' in obj.value) this.loadNewFolderData(obj);
         }
       }
     });
