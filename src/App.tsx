@@ -35,9 +35,14 @@ let getSizeAsString = (sizeInBytes) => {
 class App extends React.Component<{},{items: Array<any>, folders: Array<any>, users: Users}> {
   public _selection: Selection;
 
-  loadNewFolderData: any = (obj) => {
-    this.fetchItemsFromOneDrive('https://graph.microsoft.com/v1.0/me' + obj.path + "/" + obj.name + ":/children");
-    this.updateBreadCrumbList(obj);
+  loadNewFolderData: any = (item) => {
+    this.fetchItemsFromOneDrive('https://graph.microsoft.com/v1.0/me' + item.path + "/" + item.name + ":/children");
+    let newBreadcrumbObj = { 
+      text: item.name, 
+      key: item.path + "/" + item.name, 
+      onClick: this.onbreadcrumbObjClicked 
+    };
+    this.updateBreadCrumbList(newBreadcrumbObj);
   }
   
   fetchItemsFromOneDrive: any = (url) => {
@@ -65,22 +70,19 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
       });
   }
 
-  updateBreadCrumbList: any = (obj) => {
-    let newBreadcrumbObj = { text: 'Files', key: 'root', onClick: this.onBreadcrumbItemClicked };
-    if(obj.name) newBreadcrumbObj.text = obj.name;
-    if(obj.path && obj.name) newBreadcrumbObj.key = obj.path + "/" + obj.name;
+  updateBreadCrumbList: any = (breadcrumbObj) => {
     this.setState((prevState) => {
       let newList = prevState.folders; 
       let found = false;
       for(let i=0;i<prevState.folders.length;i++){
-        if( prevState.folders[i].key == newBreadcrumbObj.key){
+        if( prevState.folders[i].key === breadcrumbObj.key){
           newList = newList.slice(0,i+1);
           found = true;
           break;
         } 
       }
       if(!found){
-        newList = newList.concat(newBreadcrumbObj)
+        newList = newList.concat(breadcrumbObj)
       }
       return {folders: newList};
     });
@@ -142,33 +144,32 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     }
   }
 
-  onBreadcrumbItemClicked: any = (ev: React.MouseEvent<HTMLElement>, item: any) => {
+  onbreadcrumbObjClicked: any = (ev: React.MouseEvent<HTMLElement>, breadcrumbObj: any) => {
     let url = '';
-    if(item.key == 'root') {
+    if(breadcrumbObj.key == 'root') {
       url = 'https://graph.microsoft.com/v1.0/me/drive/root/children';
     }
     else{
-      url = 'https://graph.microsoft.com/v1.0/me' + item.key + ":/children";
+      url = 'https://graph.microsoft.com/v1.0/me' + breadcrumbObj.key + ":/children";
     }
     this.fetchItemsFromOneDrive(url);
-    this.updateBreadCrumbList(item);
+    this.updateBreadCrumbList(breadcrumbObj);
   }
 
   constructor(props){
     super(props);
     this.state = {
       items: [],
-      folders: [{ text: 'Files', key: 'root', onClick: this.onBreadcrumbItemClicked }],
+      folders: [{ text: 'Files', key: 'root', onClick: this.onbreadcrumbObjClicked }],
       users: {
         id: {}
       }
     };
     this._selection = new Selection({
       onSelectionChanged: () => {
-        let obj = this._selection.getSelection()[0] as any;
-        // console.log(obj);
-        if(obj != undefined) {
-          if(obj.type === "folder") this.loadNewFolderData(obj);
+        let item = this._selection.getSelection()[0] as any;
+        if(item != undefined) {
+          if(item.type === "folder") this.loadNewFolderData(item);
         }
       }
     });
