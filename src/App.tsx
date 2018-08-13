@@ -11,7 +11,6 @@ import { initializeIcons } from '@uifabric/icons';
 import {
   Selection,
 } from 'office-ui-fabric-react/lib/DetailsList';
-import { Link } from 'office-ui-fabric-react/lib/Link';
 import { adalApiFetch } from './adalConfig';
 import { Breadcrumb } from 'office-ui-fabric-react/lib/Breadcrumb';
 import { fileIcons } from './fileicons';
@@ -43,30 +42,30 @@ let getSizeAsString = (sizeInBytes) => {
 class App extends React.Component<{},{items: Array<any>, folders: Array<any>, users: Users}> {
   public _selection: Selection;
 
-  updateNavList: any = (obj) => {
+  updateBreadCrumbList: any = (breadcrumbObject) => {
     this.setState((prevState) => {
       let newList = prevState.folders; 
       let found = false;
       for(let i=0;i<prevState.folders.length;i++){
-        if(Object.is(prevState.folders[i],obj)){
+        if(Object.is(prevState.folders[i],breadcrumbObject)){
           newList = newList.slice(0,i+1);
           found = true;
           break;
         }
       }
       if(!found){
-        newList = newList.concat(obj)
+        newList = newList.concat(breadcrumbObject)
       }
       return {folders: newList};
     });
   }
 
   updateList: any = (obj) => {
-    this.fetchFromDrive('https://graph.microsoft.com/v1.0/me' + obj.path + "/" + obj.name + ":/children");
-    let newObj = { text: 'Files', key: 'root', onClick: this.onBreadcrumbItemClicked };
-    newObj.text = obj.name;
-    newObj.key = obj.path + "/" + obj.name;
-    this.updateNavList(newObj);
+    this.fetchItemsFromOneDrive('https://graph.microsoft.com/v1.0/me' + obj.path + "/" + obj.name + ":/children");
+    let newBreadcrumbObj = { text: 'Files', key: 'root', onClick: this.onBreadcrumbItemClicked };
+    newBreadcrumbObj.text = obj.name;
+    newBreadcrumbObj.key = obj.path + "/" + obj.name;
+    this.updateBreadCrumbList(newBreadcrumbObj);
   }
 
   onBreadcrumbItemClicked: any = (ev: React.MouseEvent<HTMLElement>, item: any) => {
@@ -77,11 +76,11 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     else{
       url = 'https://graph.microsoft.com/v1.0/me' + item.key + ":/children";
     }
-    this.fetchFromDrive(url);
-    this.updateNavList(item);
+    this.fetchItemsFromOneDrive(url);
+    this.updateBreadCrumbList(item);
   }
 
-  updateUsersState: any = (users) => {
+  fetchUsersDataFromOneDrive: any = (users) => {
     for(let i=0;i<users.length;i++){
       let id = users[i];
       let url = "https://graph.microsoft.com/v1.0/users/" + id;
@@ -110,7 +109,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     }
   }
 
-  pushItemToStateItems: any = (value) => {
+  pushItemToStateItemsList: any = (value) => {
     let item = {
       icon: '',
       key: value.name,
@@ -120,7 +119,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
       size: getSizeAsString(value.size),
       url: value.webUrl,
       path: value.parentReference.path,
-      value: value
+      type: 'file' in value ? "file" : "folder"
     };
     let icon = '';
     let name = value.name;
@@ -136,7 +135,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     }));  
   }
 
-  fetchFromDrive: any = (url) => {
+  fetchItemsFromOneDrive: any = (url) => {
     adalApiFetch(fetch, url, {}).then((response) => {
         response.json().then((response) => {
             this.setState((prevState) => ({
@@ -146,7 +145,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
 
             for (let i = 0; i < response.value.length; i++) { 
               let value = response.value[i];              
-              this.pushItemToStateItems(value);
+              this.pushItemToStateItemsList(value);
 
               let userId = value.lastModifiedBy.user.id;
               if((users.indexOf(userId) == -1)){
@@ -154,7 +153,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
               }
             }
 
-            this.updateUsersState(users);
+            this.fetchUsersDataFromOneDrive(users);
         });
       }).catch((error) => {
         console.error(error);
@@ -178,7 +177,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
         }
       }
     });
-    this.fetchFromDrive('https://graph.microsoft.com/v1.0/me/drive/root/children');
+    this.fetchItemsFromOneDrive('https://graph.microsoft.com/v1.0/me/drive/root/children');
   }
 
   public render() {

@@ -18,7 +18,6 @@ import { IColumn } from 'office-ui-fabric-react/lib/DetailsList';
 // Register icons and pull the fonts from the default SharePoint cdn:
 initializeIcons();
 
-
 const columns = [
   { 
     key: "icon", 
@@ -29,7 +28,7 @@ const columns = [
     isResizable: false,  
     onRender: (item) => {
       if(item.icon == ''){
-        if('file' in item.value) return <i className="ms-Icon ms-Icon--FileTemplate" aria-hidden="true"></i>
+        if(item.type === 'file') return <i className="ms-Icon ms-Icon--FileTemplate" aria-hidden="true"></i>
         else return <i className="ms-Icon ms-Icon--FabricFolderFill" aria-hidden="true"></i>
       }
       else{
@@ -45,7 +44,7 @@ const columns = [
     maxWidth: 300,
     isResizable: true,
     onRender: (item) => {
-      if('folder' in item.value){
+      if(item.type === 'folder'){
         return <Link href='' className="ms-font-m" style={{textDecoration:'none', color: 'black'}}>{item.name}</Link>
       }
       else{
