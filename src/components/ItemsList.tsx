@@ -7,22 +7,16 @@ import {
   DocumentCardTitle
 } from 'office-ui-fabric-react/lib/DocumentCard';
 import { initializeIcons } from '@uifabric/icons';
-import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import {
   DetailsList,
   Selection,
   SelectionMode
 } from 'office-ui-fabric-react/lib/DetailsList';
 import { Link } from 'office-ui-fabric-react/lib/Link';
-import { authContext } from './../adalConfig';
-import { adalApiFetch } from './../adalConfig';
-import { Breadcrumb } from 'office-ui-fabric-react/lib/Breadcrumb';
 import { HoverCard, IExpandingCardProps } from 'office-ui-fabric-react/lib/HoverCard';
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList';
-import { fileIcons } from './../fileicons';
 // Register icons and pull the fonts from the default SharePoint cdn:
 initializeIcons();
-
 
 const columns = [
   { 
@@ -34,7 +28,7 @@ const columns = [
     isResizable: false,  
     onRender: (item) => {
       if(item.icon == ''){
-        if('file' in item.value) return <i className="ms-Icon ms-Icon--FileTemplate" aria-hidden="true"></i>
+        if(item.type === 'file') return <i className="ms-Icon ms-Icon--FileTemplate" aria-hidden="true"></i>
         else return <i className="ms-Icon ms-Icon--FabricFolderFill" aria-hidden="true"></i>
       }
       else{
@@ -50,7 +44,7 @@ const columns = [
     maxWidth: 300,
     isResizable: true,
     onRender: (item) => {
-      if('folder' in item.value){
+      if(item.type === 'folder'){
         return <Link href='' className="ms-font-m" style={{textDecoration:'none', color: 'black'}}>{item.name}</Link>
       }
       else{
@@ -87,8 +81,7 @@ interface Users {
     id: object;
 }
 
-export class ItemsList extends React.Component<{items: Array<any>, selection: Selection, users: Users, columns: any},{}> {
-
+export class ItemsList extends React.Component<{items: Array<any>, selection: Selection, users: Users},{}> {
 
   public render() {
     return (
