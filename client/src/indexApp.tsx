@@ -5,26 +5,16 @@ import './index.css';
 import registerServiceWorker from './registerServiceWorker';
 import gql from "graphql-tag";
 import ApolloClient from "apollo-boost";
+import { ApolloProvider } from "react-apollo";
 
 const client = new ApolloClient({
   uri: "http://localhost:4000"
 });
 
-
-client
-  .query({
-    query: gql`
-      {
-        books{
-          title
-        }
-      }
-    `
-  })
-  .then(result => console.log(result));
-
 ReactDOM.render(
-  <App />,
+  <ApolloProvider client={client}>
+    <App />
+  </ApolloProvider>,
   document.getElementById('root') as HTMLElement
 );
 registerServiceWorker();

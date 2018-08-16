@@ -9,6 +9,9 @@ import { Breadcrumb } from 'office-ui-fabric-react/lib/Breadcrumb';
 import { fileIcons } from './fileicons';
 import { ItemsList } from './components/ItemsList';
 import { Head } from './components/Head';
+import { Query } from "react-apollo";
+import gql from "graphql-tag";
+
 // Register icons and pull the fonts from the default SharePoint cdn:
 initializeIcons();
 
@@ -32,6 +35,33 @@ let getSizeAsString = (sizeInBytes) => {
   return size;
 };
  
+const Bookname = (props) => (
+  <Query
+    query={
+      gql`
+        {
+          books{
+            title
+          }
+        }
+      `
+    }>
+    {
+      ({loading,error,data})=>{
+        if(loading) return <div>Loading...</div>;
+        if(error) return <div>Error :</div>;
+        return <div>
+          {
+            data.books.map(({title})=>(
+            <div key={title}>{title}</div>
+            ))
+          }
+        </div>
+      }
+    }
+  </Query>
+);
+
 class App extends React.Component<{},{items: Array<any>, folders: Array<any>, users: Users}> {
   public _selection: Selection;
 
@@ -188,6 +218,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
             selection={this._selection}
             users={this.state.users}
           />
+          <Bookname name="gopal"/>
         </div>
     );
   }
