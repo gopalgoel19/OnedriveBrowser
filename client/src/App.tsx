@@ -34,14 +34,14 @@ let getSizeAsString = (sizeInBytes) => {
   size = size.toFixed(2) + " GB";
   return size;
 };
- 
-const Bookname = (props) => (
+
+const Items = (props) => (
   <Query
     query={
       gql`
         {
-          books{
-            title
+          items{
+            id
           }
         }
       `
@@ -52,8 +52,8 @@ const Bookname = (props) => (
         if(error) return <div>Error :</div>;
         return <div>
           {
-            data.books.map(({title})=>(
-            <div key={title}>{title}</div>
+            data.items.map(({id})=>(
+            <div key={id}>{id}</div>
             ))
           }
         </div>
@@ -213,12 +213,12 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
           <Breadcrumb
             items={this.state.folders}
           />
+          <Items/>
           <ItemsList 
             items={ this.state.items }
             selection={this._selection}
             users={this.state.users}
           />
-          <Bookname name="gopal"/>
         </div>
     );
   }
