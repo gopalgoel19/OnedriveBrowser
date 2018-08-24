@@ -20,11 +20,20 @@ const typeDefs = gql`
 
 const resolvers = {
     Query: {
-        books: () => books,
+        books: (parent,args,context) => {
+            console.log(context.authorization);
+            return books;
+        },
     }
 }
 
-const server = new ApolloServer({typeDefs,resolvers});
+const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: ({req})=> ({
+        authorization: req.headers.authorization
+    })
+});
 
 server.listen().then(({url})=>{
     console.log(`Server ready at ${url}`);
