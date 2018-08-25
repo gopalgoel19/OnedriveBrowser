@@ -43,6 +43,7 @@ const Items = (props) => (
           items{
             id
             name
+            icon
           }
         }
       `
@@ -53,8 +54,8 @@ const Items = (props) => (
         if(error) return <div>Error :</div>;
         return <div>
           {
-            data.items.map(({id, name})=>(
-            <div key={id}>{name}</div>
+            data.items.map(({id, name, icon})=>(
+            <div key={id}><img src={icon}/>{name}</div>
             ))
           }
         </div>

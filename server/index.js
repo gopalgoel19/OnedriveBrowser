@@ -1,5 +1,30 @@
 const { ApolloServer, gql } = require ('apollo-server');
-const fetch = require('node-fetch')
+const fetch = require('node-fetch');
+const fileIcons = [
+    { name: 'accdb' },
+    { name: 'csv' },
+    { name: 'docx' },
+    { name: 'dotx' },
+    { name: 'mpp' },
+    { name: 'mpt' },
+    { name: 'odp' },
+    { name: 'ods' },
+    { name: 'odt' },
+    { name: 'one' },
+    { name: 'onepkg' },
+    { name: 'onetoc' },
+    { name: 'potx' },
+    { name: 'ppsx' },
+    { name: 'pptx' },
+    { name: 'pub' },
+    { name: 'vsdx' },
+    { name: 'vssx' },
+    { name: 'vstx' },
+    { name: 'xls' },
+    { name: 'xlsx' },
+    { name: 'xltx' },
+    { name: 'xsn' }
+];
 
 const baseURL = `https://graph.microsoft.com/v1.0/me`
 
@@ -58,7 +83,7 @@ const resolvers = {
             .then(json => {
                 let items = [];
                 json['value'].forEach((value)=>{
-                    items.push({
+                    let item = {
                         icon: '',
                         id: value.id,
                         name: value.name,
@@ -69,9 +94,17 @@ const resolvers = {
                         url: value.webUrl,
                         path: value.parentReference.path,
                         type: 'file' in value ? "file" : "folder"
-                    });
+                    };
+                    let name = value.name;
+                    for (let i=0; i< fileIcons.length ; i++){
+                        if(name.endsWith('.' + fileIcons[i].name)){
+                            item.icon = `https://static2.sharepointonline.com/files/fabric/assets/brand-icons/document/svg/${fileIcons[i].name}_16x1.svg`;
+                        }
+                    }
+                    items.push(item);
+
                 })
-                console.log(items);
+                // console.log(items);
                 return items;
             });
         }
