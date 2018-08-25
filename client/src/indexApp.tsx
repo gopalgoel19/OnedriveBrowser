@@ -4,7 +4,6 @@ import App from './App';
 import './index.css';
 import { getToken } from './adalConfig';
 import registerServiceWorker from './registerServiceWorker';
-import gql from "graphql-tag";
 import ApolloClient from "apollo-client";
 import { ApolloProvider } from "react-apollo";
 import { setContext } from 'apollo-link-context';
@@ -38,17 +37,4 @@ getToken.then((token)=>{
     document.getElementById('root') as HTMLElement
   );
 });
-
-// console.log(getMyToken());
-
-// const client = new ApolloClient({
-//   uri: "http://localhost:4000"
-// });
-
-// ReactDOM.render(
-//   <ApolloProvider client={client}>
-//     <App />
-//   </ApolloProvider>,
-//   document.getElementById('root') as HTMLElement
-// );
 registerServiceWorker();

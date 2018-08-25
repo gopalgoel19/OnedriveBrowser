@@ -42,6 +42,7 @@ const Items = (props) => (
         {
           items{
             id
+            name
           }
         }
       `
@@ -52,8 +53,8 @@ const Items = (props) => (
         if(error) return <div>Error :</div>;
         return <div>
           {
-            data.items.map(({id})=>(
-            <div key={id}>{id}</div>
+            data.items.map(({id, name})=>(
+            <div key={id}>{name}</div>
             ))
           }
         </div>
@@ -74,7 +75,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     };
     this.updateBreadCrumbList(newBreadcrumbObj);
   }
-  
+
   fetchItemsFromOneDrive: any = (url) => {
     adalApiFetch(fetch, url, {}).then((response) => {
         response.json().then((response) => {
@@ -213,7 +214,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
           <Breadcrumb
             items={this.state.folders}
           />
-          <Items/>
+          <Items url="https://graph.microsoft.com/v1.0/me/drive/root/children"/>
           <ItemsList 
             items={ this.state.items }
             selection={this._selection}
