@@ -43,14 +43,16 @@ const typeDefs = gql`
     }
 
     type User{
-        imageUrl: String
+        id: ID
         jobTitle: String
         displayName: String
+        imageUrl: String
+        # blob: String
     }
 
     type Query {
         items(url: String): [Item]
-        user: User
+        users(userIds: [String]): [User]
     }
 `;
 
@@ -106,28 +108,48 @@ const resolvers = {
                 return items;
             });
         },
-        // user: async (parent,args,context) => {
-        //     console.log(args.url);
-        //     const url = args.url;
-        //     return await fetch(url, {
-        //         method: "GET",
-        //         headers: {authorization: context.authorization}
-        //     })
-        //     .then( async (response)=>{
-        //         let photourl = url + "/photo/$value";
-        //         return await fetch(photourl, {
-        //             method: "GET",
-        //             headers: {authorization: context.authorization}
-        //         })
-        //         .then((res) => (res.blob()))
-        //         .then((blob) => {
-        //             let urlCreator = window.URL;
-        //             let imageUrl = urlCreator.createObjectURL(blob);
-        //             response.imageUrl = imageUrl;
-        //             return response;
-        //         });
-        //     })
-        // }
+        users: async (parent,args,context) => {
+            let users_id = args.userIds;
+            console.log(users_id);
+            let users = [];
+            for(let i=0;i<users_id.length;i++){
+                let id = users_id[i];
+                let url = "https://graph.microsoft.com/v1.0/users/" + id;
+                let user = {};
+                await fetch(url,{
+                    method: "GET",
+                    headers: {authorization: context.authorization}
+                })
+                .then((response) => response.json())
+                .then((res)=>{
+                    user.id = id;
+                    user.jobTitle = res.jobTitle;
+                    user.displayName = res.displayName;
+                    user.imageUrl = "";
+                    users.push(user);
+                    return user;
+                // })
+                // .then(async(user) => {
+                //     let photourl = url + "/photo/$value";
+                //     await fetch(photourl,{
+                //     method: "GET",
+                //     headers: {authorization: context.authorization}
+                //     })
+                //     .then((res) => (res.blob()))
+                //     .then((blob) => {
+                //         // // let urlCreator = window.URL;
+                //         // // let imageUrl = urlCreator.createObjectURL(blob);
+                //         // // response.imageUrl = imageUrl;
+                //         user.blob = blob;
+                //         console.log(user);
+                //         users.push(user);
+                //     })
+                });
+            }
+            // console.log()
+            // console.log(users);
+            return users;
+        }
     }
 }
 
