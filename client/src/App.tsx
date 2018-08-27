@@ -6,10 +6,9 @@ import {
 } from 'office-ui-fabric-react/lib/DetailsList';
 import { adalApiFetch } from './adalConfig';
 import { Breadcrumb } from 'office-ui-fabric-react/lib/Breadcrumb';
-import { fileIcons } from './fileicons';
 import { ItemsList } from './components/ItemsList';
 import { Head } from './components/Head';
-import { Query } from "react-apollo";
+import { Query, withApollo } from "react-apollo";
 import gql from "graphql-tag";
 
 // Register icons and pull the fonts from the default SharePoint cdn:
@@ -19,53 +18,35 @@ interface Users {
     id: object;
 }
 
-let getSizeAsString = (sizeInBytes) => {
-  let size: any = sizeInBytes/1024;
-  if(size<1024){
-    size = size.toFixed(2) + " KB";
-    return size;
-  }
-  size = size/1024;
-  if(size<1024){
-    size = size.toFixed(2) + " MB";
-    return size;
-  }
-  size = size/1024;
-  size = size.toFixed(2) + " GB";
-  return size;
-};
+// const users_query = gql`
+//   {
+//     user
+//   }
+// `;
 
-const Items = (props) => (
-  <Query
-    query={
-      gql`
-        {
-          items{
-            id
-            name
-            icon
-          }
-        }
-      `
-    }>
-    {
-      ({loading,error,data})=>{
-        if(loading) return <div>Loading...</div>;
-        if(error) return <div>Error :</div>;
-        return <div>
-          {
-            data.items.map(({id, name, icon})=>(
-            <div key={id}><img src={icon}/>{name}</div>
-            ))
-          }
-        </div>
-      }
-    }
-  </Query>
-);
+// const Users = (props) => { 
+//   return (
+//   <Query
+//     query={users_query}
+//     variables = {{
+//       url: props.url
+//     }}
+//     >
+//     {
+//       ({loading,error,data})=>{
+//         if(loading) return <div>Loading...</div>;
+//         if(error) return <div>Error :</div>;
+//         return <div>
+//           hello
+//         </div>
+//       }
+//     }
+//   </Query>
+// )};
 
 class App extends React.Component<{},{items: Array<any>, folders: Array<any>, users: Users}> {
   public _selection: Selection;
+  private client: any;
 
   loadNewFolderData: any = (item) => {
     this.fetchItemsFromOneDrive('https://graph.microsoft.com/v1.0/me' + item.path + "/" + item.name + ":/children");
@@ -78,28 +59,47 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
   }
 
   fetchItemsFromOneDrive: any = (url) => {
-    adalApiFetch(fetch, url, {}).then((response) => {
-        response.json().then((response) => {
-            this.setState((prevState) => ({
-              items: []         
-            }));
-            let users = [];
+    const items_query = gql`
+      query GetItems($url: String){
+        items(url: $url){
+          icon
+          id
+          name
+          modified
+          modifiedBy
+          modifiedByUserId
+          size
+          url
+          path
+          type
+        }
+      }
+    `;
 
-            for (let i = 0; i < response.value.length; i++) { 
-              let value = response.value[i];              
-              this.pushItemToStateItemsList(value);
+    this.client.query({
+      query: items_query,
+      variables: {
+        url: url
+      }
+    })
+    .then((response)=>{
+      this.setState(() => ({
+        items: []         
+      }));
+      let users = [];
+      const items = response.data.items;
+      for (let i = 0; i < items.length; i++) { 
+        let item = items[i];              
+        this.pushItemToStateItemsList(item);
 
-              let userId = value.lastModifiedBy.user.id;
-              if((users.indexOf(userId) == -1)){
-                users.push(userId);
-              }
-            }
+        let userId = item.modifiedByUserId;
+        if((users.indexOf(userId) == -1)){
+          users.push(userId);
+        }
+      }
 
-            this.fetchUsersDataFromOneDrive(users);
-        });
-      }).catch((error) => {
-        console.error(error);
-      });
+      this.fetchUsersDataFromOneDrive(users);
+    });
   }
 
   updateBreadCrumbList: any = (breadcrumbObj) => {
@@ -120,28 +120,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     });
   }
 
-  pushItemToStateItemsList: any = (value) => {
-    let item = {
-      icon: '',
-      key: value.name,
-      name: value.name,
-      modified: new Date(value.lastModifiedDateTime).toString().slice(0,25),
-      modifiedBy: value.lastModifiedBy.user.displayName,
-      modifiedByUserId: value.lastModifiedBy.user.id,
-      size: getSizeAsString(value.size),
-      url: value.webUrl,
-      path: value.parentReference.path,
-      type: 'file' in value ? "file" : "folder"
-    };
-    let icon = '';
-    let name = value.name;
-    for (let i=0; i< fileIcons.length ; i++){
-      if(name.endsWith('.' + fileIcons[i].name)){
-        icon = `https://static2.sharepointonline.com/files/fabric/assets/brand-icons/document/svg/${fileIcons[i].name}_16x1.svg`;
-      }
-    }
-    item.icon = icon;
-
+  pushItemToStateItemsList: any = (item) => {
     this.setState((prevState) => ({
       items: prevState.items.concat(item)
     }));  
@@ -205,6 +184,7 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
         }
       }
     });
+    this.client = props.client;
     this.fetchItemsFromOneDrive('https://graph.microsoft.com/v1.0/me/drive/root/children');
   }
 
@@ -215,7 +195,6 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
           <Breadcrumb
             items={this.state.folders}
           />
-          <Items url="https://graph.microsoft.com/v1.0/me/drive/root/children"/>
           <ItemsList 
             items={ this.state.items }
             selection={this._selection}
@@ -226,4 +205,4 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
   }
 }
 
-export default App;
+export default withApollo(App);

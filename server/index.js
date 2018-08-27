@@ -29,8 +29,7 @@ const fileIcons = [
 const baseURL = `https://graph.microsoft.com/v1.0/me`
 
 const typeDefs = gql`
-
-    type item {
+    type Item {
       icon: String
       id: ID
       name: String
@@ -43,15 +42,15 @@ const typeDefs = gql`
       type: String
     }
 
-    type user{
+    type User{
         imageUrl: String
         jobTitle: String
         displayName: String
     }
 
     type Query {
-        items: [item]
-        # users: [user]
+        items(url: String): [Item]
+        user: User
     }
 `;
 
@@ -74,6 +73,7 @@ const getSizeAsString = (sizeInBytes) => {
 const resolvers = {
     Query: {
         items: async (parent,args,context) => {
+            console.log(args.url);
             const url = args.url ? args.url : `${baseURL}/drive/root/children`;
             return await fetch(url, {
                 method: "GET",
@@ -102,12 +102,32 @@ const resolvers = {
                         }
                     }
                     items.push(item);
-
                 })
-                // console.log(items);
                 return items;
             });
-        }
+        },
+        // user: async (parent,args,context) => {
+        //     console.log(args.url);
+        //     const url = args.url;
+        //     return await fetch(url, {
+        //         method: "GET",
+        //         headers: {authorization: context.authorization}
+        //     })
+        //     .then( async (response)=>{
+        //         let photourl = url + "/photo/$value";
+        //         return await fetch(photourl, {
+        //             method: "GET",
+        //             headers: {authorization: context.authorization}
+        //         })
+        //         .then((res) => (res.blob()))
+        //         .then((blob) => {
+        //             let urlCreator = window.URL;
+        //             let imageUrl = urlCreator.createObjectURL(blob);
+        //             response.imageUrl = imageUrl;
+        //             return response;
+        //         });
+        //     })
+        // }
     }
 }
 
