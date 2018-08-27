@@ -4,11 +4,10 @@ import { initializeIcons } from '@uifabric/icons';
 import {
   Selection,
 } from 'office-ui-fabric-react/lib/DetailsList';
-import { adalApiFetch } from './adalConfig';
 import { Breadcrumb } from 'office-ui-fabric-react/lib/Breadcrumb';
 import { ItemsList } from './components/ItemsList';
 import { Head } from './components/Head';
-import { Query, withApollo } from "react-apollo";
+import { withApollo } from "react-apollo";
 import gql from "graphql-tag";
 
 // Register icons and pull the fonts from the default SharePoint cdn:
@@ -17,32 +16,6 @@ initializeIcons();
 interface Users {  
     id: object;
 }
-
-// const users_query = gql`
-//   {
-//     user
-//   }
-// `;
-
-// const Users = (props) => { 
-//   return (
-//   <Query
-//     query={users_query}
-//     variables = {{
-//       url: props.url
-//     }}
-//     >
-//     {
-//       ({loading,error,data})=>{
-//         if(loading) return <div>Loading...</div>;
-//         if(error) return <div>Error :</div>;
-//         return <div>
-//           hello
-//         </div>
-//       }
-//     }
-//   </Query>
-// )};
 
 class App extends React.Component<{},{items: Array<any>, folders: Array<any>, users: Users}> {
   public _selection: Selection;
@@ -97,7 +70,6 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
           users.push(userId);
         }
       }
-
       this.fetchUsersDataFromOneDrive(users);
     });
   }
@@ -126,33 +98,62 @@ class App extends React.Component<{},{items: Array<any>, folders: Array<any>, us
     }));  
   }
 
-  fetchUsersDataFromOneDrive: any = (users) => {
-    for(let i=0;i<users.length;i++){
-      let id = users[i];
-      let url = "https://graph.microsoft.com/v1.0/users/" + id;
-      adalApiFetch(fetch, url, {}).then((response) => {
-        response.json().then((response) => {
-            let photourl = url + "/photo/$value";
-            adalApiFetch(fetch, photourl, {})
-              .then((res) => (res.blob()))
-              .then((blob) => {
-                 let urlCreator = window.URL;
-                 let imageUrl = urlCreator.createObjectURL(blob);
-                 response.imageUrl = imageUrl;
-                this.setState((prevState)=>{
-                  let newUsers: any = prevState.users;
-                  newUsers[id] = response;
-                  return {users: newUsers}
-                });
-              })
-              .catch((error) => {
-                console.error(error);
-              });
-        });
-      }).catch((error) => {
-        console.error(error);
+  fetchUsersDataFromOneDrive: any = (userIds) => {
+    const users_query = gql`
+      query GetUsers($userIds: [String]){
+        users(userIds: $userIds){
+          id
+          displayName,
+          imageUrl
+          jobTitle
+        }
+      }
+    `;
+    
+    this.client.query({
+      query: users_query,
+      variables: {
+        userIds: userIds
+      }
+    })
+    .then((res)=>{
+      const userArray = res.data.users;
+      this.setState((prevState) => {
+        let users = prevState.users;
+        userArray.forEach((user)=>{
+          users[user.id] = user;
+        })
+        return {users: users}
       });
-    }
+    });
+
+    // for(let i=0;i<users.length;i++){
+    //   let id = users[i];
+    //   let url = "https://graph.microsoft.com/v1.0/users/" + id;
+    //   adalApiFetch(fetch, url, {}).then((response) => {
+    //     response.json().then((response) => {
+    //         // console.log(response);
+    //         let photourl = url + "/photo/$value";
+    //         adalApiFetch(fetch, photourl, {})
+    //           .then((res) => (res.blob()))
+    //           .then((blob) => {
+    //              let urlCreator = window.URL;
+    //              let imageUrl = urlCreator.createObjectURL(blob);
+    //              response.imageUrl = imageUrl;
+    //             this.setState((prevState)=>{
+    //               let newUsers: any = prevState.users;
+    //               newUsers[id] = response;
+    //               return {users: newUsers}
+    //             });
+    //           })
+    //           .catch((error) => {
+    //             console.error(error);
+    //           });
+    //     });
+    //   }).catch((error) => {
+    //     console.error(error);
+    //   });
+    // }
   }
 
   onbreadcrumbObjClicked: any = (ev: React.MouseEvent<HTMLElement>, breadcrumbObj: any) => {
