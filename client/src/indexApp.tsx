@@ -3,7 +3,6 @@ import * as ReactDOM from 'react-dom';
 import App from './App';
 import './index.css';
 import { getToken, authContext } from './adalConfig';
-import registerServiceWorker from './registerServiceWorker';
 import ApolloClient from "apollo-client";
 import { ApolloProvider } from "react-apollo";
 import { setContext } from 'apollo-link-context';
@@ -41,4 +40,3 @@ runWithAdal(authContext,()=>{
     );
   });
 });
-registerServiceWorker();
